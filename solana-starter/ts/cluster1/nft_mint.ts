@@ -5,7 +5,7 @@ import { createNft, mplTokenMetadata } from "@metaplex-foundation/mpl-token-meta
 import wallet from "../turbin3-wallet.json"
 import base58 from "bs58";
 
-const RPC_ENDPOINT = "https://api.devnet.solana.com";
+const RPC_ENDPOINT = "https://devnet.helius-rpc.com/?api-key=1655dca1-2ed6-4404-8774-4f127f2f9a31";
 const umi = createUmi(RPC_ENDPOINT);
 
 let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(wallet));
@@ -18,10 +18,10 @@ const mint = generateSigner(umi);
 (async () => {
     let tx = createNft(umi, {
         mint,
-        name: "Jeffy-Jeffy",
-        symbol: "JEFFY",
-        uri: "https://gateway.irys.xyz/3V1dgnvKAXWbh9u47pCGRoX1YG9CWRUB2STJ3Wuud3u9",
-        sellerFeeBasisPoints: percentAmount(5),
+        name: "kanima",
+        symbol: "KANIMA",
+        uri: "https://gateway.irys.xyz/Ekjwi1seKX4pAAziQQuYobbMS2cSpiWnBbrttZQbmz72",
+        sellerFeeBasisPoints: percentAmount(5)
     });
     let result = await tx.sendAndConfirm(umi);
     const signature = base58.encode(result.signature);

@@ -5,21 +5,20 @@ import { irysUploader } from "@metaplex-foundation/umi-uploader-irys"
 import { readFile } from "fs/promises"
 
 // Create a devnet connection
-const umi = createUmi('https://devnet.helius-rpc.com/?api-key=1655dca1-2ed6-4404-8774-4f127f2f9a31');
+const umi = createUmi("https://devnet.helius-rpc.com/?api-key=1655dca1-2ed6-4404-8774-4f127f2f9a31");
 
 let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(wallet));
 const signer = createSignerFromKeypair(umi, keypair);
 
-//umi.use(irysUploader());
-umi.use(irysUploader({address: "https://devnet.irys.xyz/",}));
+umi.use(irysUploader());
 umi.use(signerIdentity(signer));
 
 (async () => {
     try {
         //1. Load image
-        const image = await readFile("/Users/mohibrahim/Downloads/Rug-Day/jeffy-jeffy.png")
+        const image = await readFile("/Users/mohibrahim/Downloads/kanima.JPG")
         //2. Convert image to generic file.
-        const genericFile = createGenericFile(image, "jeffy-jeffy.png", { contentType: "image/png" });
+        const genericFile = createGenericFile(image, "KanimaUchiha.png", { contentType: "image/png" });
         //3. Upload image
         const [myUri] = await umi.uploader.upload([genericFile]);
         console.log("Your image URI: ", myUri);
