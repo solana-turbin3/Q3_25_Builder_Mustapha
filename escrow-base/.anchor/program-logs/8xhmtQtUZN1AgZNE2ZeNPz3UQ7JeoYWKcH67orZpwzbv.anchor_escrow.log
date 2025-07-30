@@ -1,0 +1,49 @@
+Streaming transaction logs mentioning 8xhmtQtUZN1AgZNE2ZeNPz3UQ7JeoYWKcH67orZpwzbv. Confirmed commitment
+Transaction executed in slot 18:
+  Signature: 5DzayASfqUmHX2GNgrirARxtACWrk4CF1UXBfLuFnFfwv7rCGWtkm62ipHpEJrz2hUSs1AoFWkbRrtgcRsXtfoPz
+  Status: Ok
+  Log Messages:
+    Program 8xhmtQtUZN1AgZNE2ZeNPz3UQ7JeoYWKcH67orZpwzbv invoke [1]
+    Program log: Instruction: MakeOffer
+    Program 11111111111111111111111111111111 invoke [2]
+    Program 11111111111111111111111111111111 success
+    Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL invoke [2]
+    Program log: Create
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]
+    Program log: Instruction: GetAccountDataSize
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 1595 of 168733 compute units
+    Program return: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA pQAAAAAAAAA=
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success
+    Program 11111111111111111111111111111111 invoke [3]
+    Program 11111111111111111111111111111111 success
+    Program log: Initialize the associated token account
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]
+    Program log: Instruction: InitializeImmutableOwner
+    Program log: Please upgrade to SPL Token 2022 for immutable owner support
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 1405 of 162120 compute units
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]
+    Program log: Instruction: InitializeAccount3
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4214 of 158236 compute units
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success
+    Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL consumed 24990 of 178708 compute units
+    Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL success
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]
+    Program log: Instruction: TransferChecked
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 6174 of 146522 compute units
+    Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success
+    Program 8xhmtQtUZN1AgZNE2ZeNPz3UQ7JeoYWKcH67orZpwzbv consumed 60399 of 200000 compute units
+    Program 8xhmtQtUZN1AgZNE2ZeNPz3UQ7JeoYWKcH67orZpwzbv success
+Transaction executed in slot 20:
+  Signature: 4DbvoGWozJQPsz6Saj2zZbmA7mNy4tah9VRC3jpVdV8ynZYuX8s6Er1ABj2YCu2xnmdc2RNQyo7EdWxXKuJUevR9
+  Status: Error processing Instruction 0: custom program error: 0x7d6
+  Log Messages:
+    Program 8xhmtQtUZN1AgZNE2ZeNPz3UQ7JeoYWKcH67orZpwzbv invoke [1]
+    Program log: Instruction: TakeOffer
+    Program log: AnchorError caused by account: offer. Error Code: ConstraintSeeds. Error Number: 2006. Error Message: A seeds constraint was violated.
+    Program log: Left:
+    Program log: C5CmpHkUHPudogizc4T9ufg799fGzZ9TYZggohC6v4hY
+    Program log: Right:
+    Program log: DooUNQ312hKjEGjgDv7GEJBKM4c9vpcFBztckswixw5i
+    Program 8xhmtQtUZN1AgZNE2ZeNPz3UQ7JeoYWKcH67orZpwzbv consumed 21520 of 200000 compute units
+    Program 8xhmtQtUZN1AgZNE2ZeNPz3UQ7JeoYWKcH67orZpwzbv failed: custom program error: 0x7d6
