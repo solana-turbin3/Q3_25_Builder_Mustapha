@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("AJy3SmNCcKiwJPjHKD3pGXeGspby93mjdQwfxAi8kxSt");
+declare_id!("CN5cQDV3qzYqhr8e8F8RfbD3r85vwZt3ipRhX15rTQC3");
 
 #[program]
 pub mod carvix {

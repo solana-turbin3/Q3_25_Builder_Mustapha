@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-carvix = "AJy3SmNCcKiwJPjHKD3pGXeGspby93mjdQwfxAi8kxSt"
+carvix = "CN5cQDV3qzYqhr8e8F8RfbD3r85vwZt3ipRhX15rTQC3"
 
 [registry]
 url = "https://api.apr.dev"

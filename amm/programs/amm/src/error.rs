@@ -17,6 +17,8 @@ pub enum AmmError {
     Underflow,
     #[msg("Invalid token.")]
     InvalidToken,
+    #[msg("Invalid reserves.")]
+    InvalidReserves,
     #[msg("Actual liquidity is less than minimum.")]
     LiquidityLessThanMinimum,
     #[msg("No liquidity in pool.")]
