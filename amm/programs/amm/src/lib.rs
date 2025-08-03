@@ -3,9 +3,11 @@ use anchor_lang::prelude::*;
 pub mod instructions;
 pub mod state;
 pub mod error;
+pub mod constants;
 
 pub use instructions::*;
 pub use state::*;
+pub use constants::*;
 
 declare_id!("9FP7Q2PdN9n2pBVg7zvGWs2ELFeNDoAGhnD3EV9KWRTF");
 
