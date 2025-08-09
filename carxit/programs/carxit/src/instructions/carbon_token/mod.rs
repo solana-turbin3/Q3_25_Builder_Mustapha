@@ -30,6 +30,7 @@ pub struct RetireTokenArgs {
 }
 
 #[derive(Accounts)]
+#[instruction(project_id: String, co2e: u64)]
 pub struct InitializeToken<'info> {
     #[account(
         init,
@@ -56,19 +57,25 @@ pub struct InitializeToken<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(amount: u64)]
 pub struct MintToken<'info> {
     #[account(mut)]
     pub project: Account<'info, Project>,
     #[account(mut)]
     pub mint: Account<'info, Mint>,
-    #[account(mut)]
-    pub user_token_account: Account<'info, TokenAccount>,
     #[account(seeds = [b"mint_authority"], bump)]
     pub mint_authority: AccountInfo<'info>,
+    #[account(mut)]
+    pub user_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+    pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]
+#[instruction(amount: u64)]
 pub struct RetireToken<'info> {
     #[account(mut)]
     pub mint: Account<'info, Mint>,

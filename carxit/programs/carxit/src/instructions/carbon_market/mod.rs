@@ -26,6 +26,7 @@ pub struct InitializeEscrowArgs {
 }
 
 #[derive(Accounts)]
+#[instruction(price: u64)]
 pub struct ListCredit<'info> {
     #[account(
         init,
@@ -44,6 +45,7 @@ pub struct ListCredit<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(sol_amount: u64)]
 pub struct InitializeEscrow<'info> {
     #[account(
         init,

@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, token::Transfer};
+use anchor_spl::token::{self, Transfer};
 use super::ConfirmEscrow;
 use crate::state::Escrow;
 use crate::CarxitError;
