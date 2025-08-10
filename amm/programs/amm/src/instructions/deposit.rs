@@ -15,7 +15,7 @@ pub struct Deposit<'info> {
 
     #[account(
         mut,
-        seeds = [b"lp", config.seed.to_le_bytes().as_ref()],
+        seeds = [b"lp", config.key().as_ref()],
         bump = config.lp_bump,
     )]
     pub mint_lp: Account<'info, Mint>,
@@ -56,6 +56,11 @@ pub struct Deposit<'info> {
     )]
     pub user_y: Account<'info, TokenAccount>,
 
+    #[account(
+        mut,
+        associated_token::mint = mint_lp,
+        associated_token::authority = user,
+    )]
     pub user_lp: Account<'info, TokenAccount>,
 
 
@@ -74,7 +79,7 @@ impl<'info> Deposit<'info> {
         let (x, y) = match self.mint_lp.supply == 0 && self.vault_x.amount == 0 && self.vault_y.amount == 0 {
             true => (max_x, max_y), // first deposit, use max_x and max_y
             false => {
-                let amount = ConstantProduct::xy_deposit(
+                let amount = ConstantProduct::xy_deposit_amounts_from_l(
                     self.vault_x.amount,
                     self.vault_y.amount,
                     self.mint_lp.supply,
@@ -100,8 +105,8 @@ impl<'info> Deposit<'info> {
         };
         let cpi_program = self.token_program.to_account_info();
         let cpi_accounts = Transfer {
-            from,
-            to,
+            from: from.to_account_info(),
+            to: to.to_account_info(),
             authority: self.user.to_account_info(),
         };
 
@@ -117,9 +122,10 @@ impl<'info> Deposit<'info> {
             authority: self.config.to_account_info(),
         };
 
-        let seeds = &[b"config"[..], &[self.config.seed.to_le_bytes()], &[self.config_bump]];
-
+        let config_seed = self.config.seed.to_le_bytes();
+        let seeds = &[b"config", &config_seed[..], &[self.config.config_bump]];
         let signer_seeds = &[&seeds[..]];
+
 
         let ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
         mint_to(ctx, amount)

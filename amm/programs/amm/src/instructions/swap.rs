@@ -18,7 +18,7 @@ pub struct Swap<'info> {
     #[account(mut)]
     pub vault_y: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(mut, seeds = [b"config"], bump )]
     pub config: Account<'info, Config>,
 
     pub token_program: Program<'info, Token>,
@@ -58,8 +58,8 @@ impl<'info> Swap<'info> {
         token::transfer(cpi_ctx_in, amount_in)?;
 
         // Transfer from vault to user (token out)
-        let bump = self.config.bump;
-        let seeds = &[b"config", &[bump]];
+        let config_seed = self.config.seed.to_le_bytes();
+        let seeds = &[b"config", &config_seed[..], &[self.config.config_bump]];
         let signer = &[&seeds[..]];
 
         let cpi_ctx_out = CpiContext::new_with_signer(
