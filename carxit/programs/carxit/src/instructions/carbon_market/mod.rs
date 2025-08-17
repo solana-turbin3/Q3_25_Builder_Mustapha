@@ -60,6 +60,7 @@ pub struct InitializeEscrow<'info> {
     #[account(mut)]
     pub escrow_token_account: Account<'info, TokenAccount>,
     pub credit_token: Account<'info, TokenAccount>,
+    /// CHECK: This account is used to receive SOL from the escrow, no validation needed
     #[account(mut)]
     pub seller: AccountInfo<'info>,
     #[account(mut)]
@@ -79,8 +80,10 @@ pub struct ConfirmEscrow<'info> {
     pub escrow_vault: SystemAccount<'info>,
     #[account(mut)]
     pub escrow_token_account: Account<'info, TokenAccount>,
+    /// CHECK: This account is used to receive SOL from the escrow, no validation needed
     #[account(mut)]
     pub seller: AccountInfo<'info>,
+    /// CHECK: This account is used to receive tokens from the escrow, no validation needed
     #[account(mut)]
     pub buyer: AccountInfo<'info>,
     #[account(mut)]
@@ -99,8 +102,10 @@ pub struct RefundEscrow<'info> {
     pub escrow_vault: SystemAccount<'info>,
     #[account(mut)]
     pub escrow_token_account: Account<'info, TokenAccount>,
+    /// CHECK: This account is used to receive SOL from the escrow, no validation needed
     #[account(mut)]
     pub seller: AccountInfo<'info>,
+    /// CHECK: This account is used to receive tokens from the escrow, no validation needed
     #[account(mut)]
     pub buyer: AccountInfo<'info>,
     #[account(mut)]

@@ -47,6 +47,7 @@ pub struct InitializeToken<'info> {
         mint::authority = mint_authority
     )]
     pub mint: Account<'info, Mint>,
+    /// CHECK: This is the mint authority PDA, validated by seeds constraint
     #[account(seeds = [b"mint_authority"], bump)]
     pub mint_authority: AccountInfo<'info>,
     #[account(mut)]
@@ -63,6 +64,7 @@ pub struct MintToken<'info> {
     pub project: Account<'info, Project>,
     #[account(mut)]
     pub mint: Account<'info, Mint>,
+    /// CHECK: This is the mint authority PDA, validated by seeds constraint
     #[account(seeds = [b"mint_authority"], bump)]
     pub mint_authority: AccountInfo<'info>,
     #[account(mut)]
