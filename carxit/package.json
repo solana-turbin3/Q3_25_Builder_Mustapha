@@ -2,7 +2,9 @@
   "license": "ISC",
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "test:client": "ts-node clients/test-client.ts",
+    "test:all": "npm run test && npm run test:client"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.31.1",

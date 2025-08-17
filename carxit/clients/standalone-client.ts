@@ -1,20 +1,17 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { Carxit } from "../target/types/carxit";
 
 /**
- * Carbon Credit Trading Platform Client
+ * Standalone Carbon Credit Trading Platform Client
  * 
- * This client provides a comprehensive interface for interacting with the Carxit program
- * for carbon credit tokenization, trading, and retirement on Solana.
+ * This client demonstrates all the functionality of the Carxit program
+ * without requiring a live Solana connection or environment variables.
  */
-export class CarxitClient {
-  private program: Program<Carxit>;
-  private provider: anchor.AnchorProvider;
+export class StandaloneCarxitClient {
+  private programId: anchor.web3.PublicKey;
 
-  constructor(provider: anchor.AnchorProvider) {
-    this.provider = provider;
-    this.program = anchor.workspace.Carxit as Program<Carxit>;
+  constructor() {
+    // Use the actual program ID from your project
+    this.programId = new anchor.web3.PublicKey("9z9vKD4orxyW5XYj1mKVhyUJGafukK8uQKgh4TARPGm");
   }
 
   /**
@@ -22,7 +19,7 @@ export class CarxitClient {
    */
   getProgramInfo() {
     return {
-      programId: this.program.programId.toString(),
+      programId: this.programId.toString(),
       programName: "Carxit",
       description: "Carbon credit trading platform on Solana",
       version: "1.0.0"
@@ -51,7 +48,7 @@ export class CarxitClient {
   private async generateProjectPDA(user: anchor.web3.PublicKey): Promise<anchor.web3.PublicKey> {
     const [projectPda] = await anchor.web3.PublicKey.findProgramAddress(
       [Buffer.from("project"), user.toBuffer()],
-      this.program.programId
+      this.programId
     );
     return projectPda;
   }
@@ -62,7 +59,7 @@ export class CarxitClient {
   private async generateMintAuthorityPDA(): Promise<anchor.web3.PublicKey> {
     const [mintAuthorityPda] = await anchor.web3.PublicKey.findProgramAddress(
       [Buffer.from("mint_authority")],
-      this.program.programId
+      this.programId
     );
     return mintAuthorityPda;
   }
@@ -73,7 +70,7 @@ export class CarxitClient {
   private async generateListingPDA(mint: anchor.web3.PublicKey): Promise<anchor.web3.PublicKey> {
     const [listingPda] = await anchor.web3.PublicKey.findProgramAddress(
       [Buffer.from("listing"), mint.toBuffer()],
-      this.program.programId
+      this.programId
     );
     return listingPda;
   }
@@ -93,7 +90,7 @@ export class CarxitClient {
         seller.toBuffer(),
         mint.toBuffer()
       ],
-      this.program.programId
+      this.programId
     );
     return escrowPda;
   }
@@ -104,7 +101,7 @@ export class CarxitClient {
   async generateEscrowVaultPDA(escrowPda: anchor.web3.PublicKey): Promise<anchor.web3.PublicKey> {
     const [escrowVaultPda] = await anchor.web3.PublicKey.findProgramAddress(
       [Buffer.from("vault"), escrowPda.toBuffer()],
-      this.program.programId
+      this.programId
     );
     return escrowVaultPda;
   }
@@ -462,20 +459,143 @@ export class CarxitClient {
       ]
     };
   }
+
+  /**
+   * Demonstrate instruction usage examples
+   */
+  demonstrateInstructionUsage() {
+    console.log("📝 Instruction Usage Examples\n");
+
+    const examples = {
+      initializeToken: {
+        description: "Initialize a new carbon credit project",
+        parameters: {
+          projectId: "Solar_Farm_Project_001",
+          co2e: "10000",
+          user: "Project Owner Public Key"
+        },
+        accounts: [
+          "project (PDA)",
+          "mint (New Token Mint)",
+          "mintAuthority (PDA)",
+          "user (Signer)",
+          "systemProgram",
+          "tokenProgram",
+          "rent"
+        ]
+      },
+      mintToken: {
+        description: "Mint carbon credits to a user",
+        parameters: {
+          amount: "5000"
+        },
+        accounts: [
+          "project (PDA)",
+          "mint",
+          "mintAuthority (PDA)",
+          "userTokenAccount",
+          "user (Signer)",
+          "systemProgram",
+          "tokenProgram",
+          "rent"
+        ]
+      },
+      listCredit: {
+        description: "List carbon credits for sale",
+        parameters: {
+          price: "1000000"
+        },
+        accounts: [
+          "listing (PDA)",
+          "creditToken",
+          "seller (Signer)",
+          "systemProgram",
+          "tokenProgram",
+          "rent"
+        ]
+      },
+      initializeEscrow: {
+        description: "Initialize escrow for purchase",
+        parameters: {
+          solAmount: "500000"
+        },
+        accounts: [
+          "escrow (PDA)",
+          "escrowVault (PDA)",
+          "escrowTokenAccount",
+          "creditToken",
+          "seller",
+          "buyer (Signer)",
+          "sellerTokenAccount",
+          "systemProgram",
+          "tokenProgram",
+          "rent"
+        ]
+      },
+      confirmEscrow: {
+        description: "Confirm escrow transaction",
+        parameters: {},
+        accounts: [
+          "escrow (PDA)",
+          "escrowVault (PDA)",
+          "escrowTokenAccount",
+          "seller",
+          "buyer",
+          "buyerTokenAccount",
+          "signer (Signer)",
+          "systemProgram",
+          "tokenProgram"
+        ]
+      },
+      refundEscrow: {
+        description: "Refund escrow transaction",
+        parameters: {},
+        accounts: [
+          "escrow (PDA)",
+          "escrowVault (PDA)",
+          "escrowTokenAccount",
+          "seller",
+          "buyer",
+          "sellerTokenAccount",
+          "signer (Signer)",
+          "systemProgram",
+          "tokenProgram"
+        ]
+      },
+      retireToken: {
+        description: "Retire/burn carbon credits",
+        parameters: {
+          amount: "100"
+        },
+        accounts: [
+          "mint",
+          "userTokenAccount",
+          "user (Signer)",
+          "tokenProgram"
+        ]
+      }
+    };
+
+    Object.entries(examples).forEach(([instruction, details]) => {
+      console.log(`🔧 ${instruction}:`);
+      console.log(`   Description: ${details.description}`);
+      console.log(`   Parameters: ${JSON.stringify(details.parameters, null, 2)}`);
+      console.log(`   Accounts: ${details.accounts.join(', ')}`);
+      console.log("");
+    });
+
+    return examples;
+  }
 }
 
 /**
- * Example usage of the Carxit client
+ * Example usage of the standalone Carxit client
  */
-export async function runCarxitExample() {
-  console.log("🌱 Starting Carbon Credit Trading Platform Example\n");
-
-  // Setup provider
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
+export async function runStandaloneExample() {
+  console.log("🌱 Starting Standalone Carbon Credit Trading Platform Example\n");
 
   // Create client
-  const client = new CarxitClient(provider);
+  const client = new StandaloneCarxitClient();
 
   try {
     // Display program information
@@ -493,6 +613,10 @@ export async function runCarxitExample() {
     console.log("Total Account Types:", stats.totalAccountTypes);
     console.log("Total PDA Seeds:", stats.totalPDASeeds);
     console.log("Supported Features:", stats.supportedFeatures);
+
+    // Demonstrate instruction usage
+    console.log("\n=== INSTRUCTION USAGE EXAMPLES ===");
+    const instructionExamples = client.demonstrateInstructionUsage();
 
     // Simulate trading workflow
     console.log("\n=== TRADING WORKFLOW SIMULATION ===");
@@ -523,7 +647,7 @@ export async function runCarxitExample() {
       console.log(`   - ${seed}`);
     });
 
-    console.log("\n🎉 Carbon Credit Trading Platform Example Completed Successfully!");
+    console.log("\n🎉 Standalone Carbon Credit Trading Platform Example Completed Successfully!");
     console.log("\n📊 Summary:");
     console.log(`   Project: ${lifecycle.projectId}`);
     console.log(`   Total CO2e: ${lifecycle.totalCo2e}`);
@@ -535,16 +659,18 @@ export async function runCarxitExample() {
     return {
       programInfo,
       stats,
+      instructionExamples,
       workflow,
       lifecycle,
       trading
     };
 
   } catch (error) {
-    console.error("❌ Error running example:", error);
+    console.error("❌ Error running standalone example:", error);
     throw error;
   }
 }
 
 // Export for use in other files
-export default CarxitClient;
+export default StandaloneCarxitClient;
+

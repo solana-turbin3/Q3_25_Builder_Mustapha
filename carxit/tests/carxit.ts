@@ -1,154 +1,184 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Carxit } from "../target/types/carxit";
-import { assert } from "chai";
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 describe("carxit", () => {
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
+  anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.Carxit as Program<Carxit>;
 
-  // PDAs
-  const projectPda = async (projectId: string) => {
-    return await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from("project"), Buffer.from(projectId)],
-      program.programId
-    );
-  };
-  const mintAuthorityPda = async () => {
-    return await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from("mint_authority")],
-      program.programId
-    );
-  };
+  // Generate test wallets
+  const projectOwner = anchor.web3.Keypair.generate();
+  const seller = anchor.web3.Keypair.generate();
+  const buyer = anchor.web3.Keypair.generate();
+  const mintKeypair = anchor.web3.Keypair.generate();
 
-  it("initialize_token + mint + retire", async () => {
-    const projectId = "my_project";
-    const [proj, projBump] = await projectPda(projectId);
-    const [mintAuth, authBump] = await mintAuthorityPda();
+  // Generate PDAs
+  const [projectPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("project"), projectOwner.publicKey.toBuffer()],
+    program.programId
+  );
 
-    // initialize_token
-    await program.methods
-      .initializeToken(projectId, new anchor.BN(42))
-      .accounts({
-        project: proj,
-        mintAuthority: mintAuth,
-        mint: proj,           // anchor will derive mint PDA itself
-        user: provider.wallet.publicKey,
+  const [mintAuthorityPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("mint_authority")],
+    program.programId
+  );
+
+  const [listingPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("listing"), mintKeypair.publicKey.toBuffer()],
+    program.programId
+  );
+
+  const [escrowPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("escrow"),
+      buyer.publicKey.toBuffer(),
+      seller.publicKey.toBuffer(),
+      mintKeypair.publicKey.toBuffer()
+    ],
+    program.programId
+  );
+
+  const [escrowVaultPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("vault"), escrowPda.toBuffer()],
+    program.programId
+  );
+
+  // Token accounts
+  const ownerTokenAccount = getAssociatedTokenAddressSync(mintKeypair.publicKey, projectOwner.publicKey);
+  const sellerTokenAccount = getAssociatedTokenAddressSync(mintKeypair.publicKey, seller.publicKey);
+  const buyerTokenAccount = getAssociatedTokenAddressSync(mintKeypair.publicKey, buyer.publicKey);
+
+  it("Is initialized!", async () => {
+    const tx = await program.methods
+      .initializeToken("Solar_Farm_Project_001", new anchor.BN(10000))
+      .accountsStrict({
+        project: projectPda,
+        mint: mintKeypair.publicKey,
+        mintAuthority: mintAuthorityPda,
+        user: projectOwner.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       })
-      .rpc();
-
-    // derive user's ATA
-    const userAta = await anchor.utils.token.associatedAddress({
-      mint: proj,
-      owner: provider.wallet.publicKey,
-    });
-
-    // mint_token
-    await program.methods
-      .mintToken(new anchor.BN(100))
-      .accounts({
-        project: proj,
-        mint: proj, // same mint
-        userTokenAccount: userAta,
-        mintAuthority: mintAuth,
-        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-      })
-      .rpc();
-
-    // retire_token
-    await program.methods
-      .retireToken(new anchor.BN(50))
-      .accounts({
-        mint: proj,
-        userTokenAccount: userAta,
-        user: provider.wallet.publicKey,
-        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-      })
-      .rpc();
+      .signers([projectOwner, mintKeypair])
+      .rpc({ skipPreflight: true });
   });
 
-  it("list + escrow flow", async () => {
-    // prepare listing
-    const seller = provider.wallet.publicKey;
-    const creditMint = anchor.web3.Keypair.generate().publicKey;
-    const [listingPda] = await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from("listing"), creditMint.toBuffer()],
-      program.programId
-    );
-    // list_credit
-    await program.methods
-      .listCredit(new anchor.BN(5))
-      .accounts({
+  it("Can mint tokens!", async () => {
+    const tx = await program.methods
+      .mintToken(new anchor.BN(5000))
+      .accountsStrict({
+        project: projectPda,
+        mint: mintKeypair.publicKey,
+        mintAuthority: mintAuthorityPda,
+        userTokenAccount: ownerTokenAccount,
+        user: projectOwner.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      })
+      .signers([projectOwner])
+      .rpc({ skipPreflight: true });
+  });
+
+  it("Can mint tokens to seller!", async () => {
+    const tx = await program.methods
+      .mintToken(new anchor.BN(2000))
+      .accountsStrict({
+        project: projectPda,
+        mint: mintKeypair.publicKey,
+        mintAuthority: mintAuthorityPda,
+        userTokenAccount: sellerTokenAccount,
+        user: seller.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      })
+      .signers([seller])
+      .rpc({ skipPreflight: true });
+  });
+
+  it("Can list credits!", async () => {
+    const tx = await program.methods
+      .listCredit(new anchor.BN(1000000))
+      .accountsStrict({
         listing: listingPda,
-        creditToken: creditMint,
-        seller,
+        creditToken: sellerTokenAccount,
+        seller: seller.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       })
-      .rpc();
+      .signers([seller])
+      .rpc({ skipPreflight: true });
+  });
 
-    // escrow
-    const buyer = provider.wallet.publicKey;
-    const [escrowPda] = await anchor.web3.PublicKey.findProgramAddress(
-      [
-        Buffer.from("escrow"),
-        buyer.toBuffer(),
-        seller.toBuffer(),
-        creditMint.toBuffer(),
-      ],
-      program.programId
-    );
-    const [vaultPda] = await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from("vault"), escrowPda.toBuffer()],
-      program.programId
-    );
-
-    // initialize_escrow
-    await program.methods
-      .initializeEscrow(new anchor.BN(1_000_000))
-      .accounts({
+  it("Can initialize escrow!", async () => {
+    const tx = await program.methods
+      .initializeEscrow(new anchor.BN(500000))
+      .accountsStrict({
         escrow: escrowPda,
-        escrowVault: vaultPda,
-        escrowTokenAccount: listingPda, // reuse listing as token acct
-        creditToken: creditMint,
-        seller,
-        buyer,
-        sellerTokenAccount: listingPda,
+        escrowVault: escrowVaultPda,
+        escrowTokenAccount: sellerTokenAccount,
+        creditToken: sellerTokenAccount,
+        seller: seller.publicKey,
+        buyer: buyer.publicKey,
+        sellerTokenAccount: sellerTokenAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       })
-      .rpc();
+      .signers([buyer])
+      .rpc({ skipPreflight: true });
+  });
 
-    // confirm both sides
-    await program.methods.confirmEscrow().accounts({
-      escrow: escrowPda,
-      escrowVault: vaultPda,
-      escrowTokenAccount: listingPda,
-      seller,
-      buyer,
-      buyerTokenAccount: listingPda,
-      signer: buyer,
-      systemProgram: anchor.web3.SystemProgram.programId,
-      tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-    }).rpc();
+  it("Can confirm escrow as buyer!", async () => {
+    const tx = await program.methods
+      .confirmEscrow()
+      .accountsStrict({
+        escrow: escrowPda,
+        escrowVault: escrowVaultPda,
+        escrowTokenAccount: sellerTokenAccount,
+        seller: seller.publicKey,
+        buyer: buyer.publicKey,
+        buyerTokenAccount: buyerTokenAccount,
+        signer: buyer.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([buyer])
+      .rpc({ skipPreflight: true });
+  });
 
-    await program.methods.confirmEscrow().accounts({
-      escrow: escrowPda,
-      escrowVault: vaultPda,
-      escrowTokenAccount: listingPda,
-      seller,
-      buyer,
-      buyerTokenAccount: listingPda,
-      signer: seller,
-      systemProgram: anchor.web3.SystemProgram.programId,
-      tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-    }).rpc();
+  it("Can confirm escrow as seller!", async () => {
+    const tx = await program.methods
+      .confirmEscrow()
+      .accountsStrict({
+        escrow: escrowPda,
+        escrowVault: escrowVaultPda,
+        escrowTokenAccount: sellerTokenAccount,
+        seller: seller.publicKey,
+        buyer: buyer.publicKey,
+        buyerTokenAccount: buyerTokenAccount,
+        signer: seller.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([seller])
+      .rpc({ skipPreflight: true });
+  });
 
+  it("Can retire tokens!", async () => {
+    const tx = await program.methods
+      .retireToken(new anchor.BN(100))
+      .accountsStrict({
+        mint: mintKeypair.publicKey,
+        userTokenAccount: buyerTokenAccount,
+        user: buyer.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([buyer])
+      .rpc({ skipPreflight: true });
   });
 });
